@@ -1,6 +1,9 @@
-use std::fmt::{Display, Formatter};
-use chrono::{Datelike, DateTime, Utc};
+use std::fmt::Display;
+use chrono::{Datelike, Utc};
 use colored::Colorize;
+use task::Task;
+
+mod task;
 
 
 fn main() {
@@ -19,7 +22,7 @@ fn main() {
         /*if task.deadline.is_some_and(|d| d < (Utc::now()+chrono::Duration::days(5))) && !task.done {
             println!("{}",task.to_string().as_str().red());
         }*/
-        let msg = match (task.deadline, task.done){
+        let msg = match (task.deadline(), task.is_done()){
             (Some(d),false) => match (d - Utc::now()).num_days() {
                 x if x < 0 => task.to_string().as_str().red(),
                 0 => task.to_string().as_str().truecolor(255, 100, 0),
@@ -30,38 +33,5 @@ fn main() {
             (_,true) => task.to_string().as_str().truecolor(80,80,80).strikethrough(),
         };
         println!("{}", msg);
-    }
-}
-
-struct Task{
-    id: u32,
-    name: String,
-    description: String,
-    done: bool,
-    deadline: Option<DateTime<Utc>>
-}
-
-impl Task{
-    fn new(id: u32 ,name: String, description: String,deadline: Option<DateTime<Utc>>) -> Task{
-        Task{
-            id,
-            name,
-            description,
-            done: false,
-            deadline
-        }
-    }
-
-    fn mark_done(&mut self){
-        self.done = true;
-    }
-}
-
-impl Display for Task{
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self.deadline{
-            Some(d) => write!(f, "Task: {} - {} - {} - {}/{}/{}", self.id, self.name, self.description, d.day(), d.month(), d.year()),
-            None => write!(f, "Task: {} - {} - {}", self.id, self.name, self.description),
-        }
     }
 }
